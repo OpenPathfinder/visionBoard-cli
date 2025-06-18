@@ -93,9 +93,9 @@ npm run type:check
 └── README.md           # This file
 ```
 
-## CI/CD Pipeline
+## CI Pipeline
 
-The project includes a GitHub Actions workflow for continuous integration that runs on pull requests to the main branch. The pipeline performs the following checks:
+The project includes a GitHub Actions workflow for continuous integration that runs on pull requests to the main branch and when commits are pushed to main. The pipeline performs the following checks in optimized order:
 
 - Linting with StandardJS
 - Type checking with TypeScript
