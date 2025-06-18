@@ -12,15 +12,11 @@ const pkg = JSON.parse(readFileSync(join(__dirname, '../package.json'), 'utf8'))
 const program = new Command()
 
 program
+  .name('visionboard')
   .command('version')
   .description('Show version information')
   .action(() => {
     console.log(`Your version is: ${pkg.name}@${pkg.version} (${pkg.license})`)
   })
 
-// Show help if no arguments provided
-if (process.argv.length <= 2) {
-  program.help()
-} else {
-  program.parse(process.argv)
-}
+program.parse(process.argv)

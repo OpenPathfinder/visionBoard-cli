@@ -17,7 +17,8 @@ const pkg = getPackageJson()
 
 // Helper function to run the CLI using tsx (TypeScript executor)
 function runCLI (args = '') {
-  return execSync(`tsx ${join(__dirname, '../index.ts')} ${args}`, { encoding: 'utf8' })
+  const cliPath = join(__dirname, '../index.ts')
+  return execSync(`npx tsx "${cliPath}" ${args}`, { encoding: 'utf8' })
 }
 
 describe('CLI', () => {
@@ -28,16 +29,5 @@ describe('CLI', () => {
     // Verify the output contains version information and package details
     expect(output).toContain(pkg.name)
     expect(output).toContain(pkg.version)
-  })
-
-  test('CLI should show help when no arguments are provided', () => {
-    // Run the CLI without any arguments directly from TypeScript source
-    const output = runCLI('')
-
-    // Verify the output contains help information
-    expect(output).toContain('Usage:')
-    expect(output).toContain('Options:')
-    expect(output).toContain('Commands:')
-    expect(output).toContain('version')
   })
 })

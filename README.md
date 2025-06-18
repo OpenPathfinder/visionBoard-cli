@@ -116,4 +116,4 @@ Contributions are welcome! Please feel free to submit a Pull Request.
 
 ## License
 
-MIT © Ulises Gascón
+MIT © Ulises Gascón — see [LICENSE](LICENSE)
