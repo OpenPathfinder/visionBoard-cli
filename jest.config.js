@@ -12,6 +12,14 @@ const config = {
   },
   extensionsToTreatAsEsm: ['.ts'],
   testMatch: ['**/__tests__/**/*.test.ts'],
+  // Add direct testing of TypeScript files
+  testPathIgnorePatterns: ['/node_modules/', '/dist/'],
+  collectCoverageFrom: [
+    'src/**/*.ts',
+    '!src/**/*.d.ts',
+    '!src/**/*.test.ts',
+    '!__tests__/**.ts'
+  ],
 };
 
 export default config;
