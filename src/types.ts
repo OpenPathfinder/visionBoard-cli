@@ -19,4 +19,7 @@ export interface Config {
   visionBoardInstanceUrl: string
 }
 
-// Add more interfaces as needed
+export interface CommandResult {
+  messages: string[]
+  success: boolean
+}

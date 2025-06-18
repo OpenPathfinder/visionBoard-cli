@@ -1,5 +1,15 @@
 import validator from 'validator'
-import { Config, APIHealthResponse } from './types.js'
+import { Config, APIHealthResponse, CommandResult } from './types.js'
+import { readFileSync } from 'fs'
+import { fileURLToPath } from 'url'
+import { dirname, join } from 'path'
+
+const __filename = fileURLToPath(import.meta.url)
+const __dirname = dirname(__filename)
+
+export const getPackageJson = () => {
+  return JSON.parse(readFileSync(join(__dirname, '../package.json'), 'utf8'))
+}
 
 export const getConfig = (): Config => {
   const envUrl = process.env.VISIONBOARD_INSTANCE_URL
@@ -23,4 +33,13 @@ export const isApiCompatible = (details: APIHealthResponse) => {
 
 export const isApiAvailable = (details: APIHealthResponse) => {
   return details.status === 'ok'
+}
+
+export const handleCommandResult = (result: CommandResult) => {
+  if (result.success) {
+    console.log(result.messages.join('\n'))
+  } else {
+    console.error(result.messages.join('\n'))
+    process.exit(1)
+  }
 }
