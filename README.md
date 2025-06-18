@@ -50,6 +50,28 @@ visionboard
 
 This will display the help information with available commands.
 
+## Configuration
+
+The visionBoard CLI supports configuration through environment variables:
+
+### Environment Variables
+
+| Variable | Description | Default |
+|----------|-------------|--------|
+| `VISIONBOARD_INSTANCE_URL` | URL of the visionBoard API instance | `http://localhost:3000` |
+
+**Note**: The URL must include a protocol (http:// or https://).
+
+Example usage:
+
+```bash
+# Set the API URL for a single command
+VISIONBOARD_INSTANCE_URL=https://api.visionboard.example.com visionboard
+
+# Or export it for the current session
+export VISIONBOARD_INSTANCE_URL=https://api.visionboard.example.com
+visionboard
+```
 
 ## Development
 
