@@ -37,7 +37,8 @@
     "typescript": "5.8.3"
   },
   "dependencies": {
-    "commander": "14.0.0"
+    "commander": "14.0.0",
+    "got": "14.4.7"
   },
   "type": "module",
   "files": [
