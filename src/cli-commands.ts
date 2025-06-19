@@ -1,6 +1,6 @@
 import { CommandResult } from './types.js'
 import { isApiAvailable, isApiCompatible, getPackageJson } from './utils.js'
-import { getAPIDetails } from './api-client.js'
+import { getAPIDetails, createProject, addGithubOrgToProject } from './api-client.js'
 
 const pkg = getPackageJson()
 
@@ -28,6 +28,27 @@ export const runDoctor = async (): Promise<CommandResult> => {
     }
   } catch (error) {
     messages.push('❌ Seems like the API is not available')
+    success = false
+  }
+
+  return {
+    messages,
+    success
+  }
+}
+
+export const addProjectWithGithubOrgs = async (name: string, githubOrgUrls: string[]): Promise<CommandResult> => {
+  const messages: string[] = []
+  let success = true
+  try {
+    const project = await createProject(name)
+    // Add GitHub organizations sequentially to avoid race conditions
+    for (const githubOrgUrl of githubOrgUrls) {
+      await addGithubOrgToProject(project.id, githubOrgUrl)
+    }
+    messages.push('✅ Project created successfully')
+  } catch (error) {
+    messages.push(`❌ Failed to create the project: ${error instanceof Error ? error.message : 'Unknown error'}`)
     success = false
   }
 
