@@ -128,7 +128,7 @@ The project includes a GitHub Actions workflow for continuous integration that r
 The pipeline runs on multiple platforms and Node.js versions to ensure maximum compatibility:
 
 - **Operating Systems**: Ubuntu, Windows, and macOS
-- **Node.js Versions**: 18.x, 20.x, 22.x, 24.x
+- **Node.js Versions**: 20.x, 22.x, 24.x
 
 Test coverage reports are automatically uploaded as artifacts for each platform and Node.js version combination.
 

@@ -23,9 +23,13 @@ program
     handleCommandResult(result)
   })
 
-program
-  .command('add-project')
-  .description('Add a project with GitHub organizations')
+const project = program
+  .command('project')
+  .description('Project management')
+
+project
+  .command('add')
+  .description('Add a project with a list of GitHub organizations (optional)')
   .requiredOption('-n, --name <name>', 'Project name')
   .option('-g, --github-orgs <githubOrgUrls...>', 'GitHub organization URLs')
   .action(async (options) => {
