@@ -4,7 +4,7 @@ import { Command } from 'commander'
 // @ts-ignore
 import { stringToArray } from '@ulisesgascon/string-to-array'
 import { handleCommandResult } from './utils.js'
-import { getVersion, runDoctor, addProjectWithGithubOrgs, printChecklists, printChecks } from './cli-commands.js'
+import { getVersion, runDoctor, addProjectWithGithubOrgs, printChecklists, printChecks, printWorkflows } from './cli-commands.js'
 
 const program = new Command()
 
@@ -20,6 +20,18 @@ program
   .action(async () => {
     console.log('Checking API availability...')
     const result = await runDoctor()
+    handleCommandResult(result)
+  })
+
+const workflow = program
+  .command('workflow')
+  .description('Compliance workflow management')
+
+workflow
+  .command('list')
+  .description('Print all available compliance workflows')
+  .action(async () => {
+    const result = await printWorkflows()
     handleCommandResult(result)
   })
 

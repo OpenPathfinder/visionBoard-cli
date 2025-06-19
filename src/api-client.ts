@@ -1,6 +1,6 @@
 import { getConfig } from './utils.js'
 import { got } from 'got'
-import { APIHealthResponse, APIProjectDetails, APIGithubOrgDetails, APIChecklistItem, APICheckItem } from './types.js'
+import { APIHealthResponse, APIProjectDetails, APIGithubOrgDetails, APIChecklistItem, APICheckItem, APIWorkflowItem } from './types.js'
 
 export const apiClient = () => {
   const config = getConfig()
@@ -69,4 +69,13 @@ export const getAllChecks = async (): Promise<APICheckItem[]> => {
     throw new Error(`Failed to get the data from the API: ${response.statusCode} ${response.body}`)
   }
   return response.body as APICheckItem[]
+}
+
+export const getAllWorkflows = async (): Promise<APIWorkflowItem[]> => {
+  const client = apiClient()
+  const response = await client.get('workflow', { responseType: 'json' })
+  if (response.statusCode !== 200) {
+    throw new Error(`Failed to get the data from the API: ${response.statusCode} ${response.body}`)
+  }
+  return response.body as APIWorkflowItem[]
 }

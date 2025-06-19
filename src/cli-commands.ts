@@ -1,6 +1,6 @@
 import { CommandResult } from './types.js'
 import { isApiAvailable, isApiCompatible, getPackageJson } from './utils.js'
-import { getAPIDetails, createProject, addGithubOrgToProject, getAllChecklistItems, getAllChecks } from './api-client.js'
+import { getAPIDetails, createProject, addGithubOrgToProject, getAllChecklistItems, getAllChecks, getAllWorkflows } from './api-client.js'
 
 const pkg = getPackageJson()
 
@@ -102,6 +102,33 @@ export const printChecks = async (): Promise<CommandResult> => {
     })
   } catch (error) {
     messages.push(`❌ Failed to retrieve compliance check items: ${error instanceof Error ? error.message : 'Unknown error'}`)
+    success = false
+  }
+
+  return {
+    messages,
+    success
+  }
+}
+
+export const printWorkflows = async (): Promise<CommandResult> => {
+  const messages: string[] = []
+  let success = true
+  try {
+    const workflows = await getAllWorkflows()
+    if (workflows.length === 0) {
+      messages.push('No compliance workflows found')
+      return {
+        messages,
+        success
+      }
+    }
+    messages.push('Compliance workflows available:')
+    workflows.forEach((workflow) => {
+      messages.push(`- ${workflow.id}: ${workflow.description}`)
+    })
+  } catch (error) {
+    messages.push(`❌ Failed to retrieve compliance workflow items: ${error instanceof Error ? error.message : 'Unknown error'}`)
     success = false
   }
 
