@@ -1,8 +1,9 @@
 /* eslint-env jest */
 
-import { getVersion, runDoctor } from '../cli-commands.js'
+import { getVersion, runDoctor, addProjectWithGithubOrgs } from '../cli-commands.js'
 import { getPackageJson } from '../utils.js'
-import { APIHealthResponse } from '../types.js'
+import { APIHealthResponse, APIProjectDetails, APIGithubOrgDetails, APIErrorResponse } from '../types.js'
+import { mockApiHealthResponse, mockAPIProjectResponse, mockAPIGithubOrgResponse } from './fixtures.js'
 import nock from 'nock'
 
 const pkg = getPackageJson()
@@ -32,12 +33,7 @@ describe('CLI Commands', () => {
     let apiHealthResponse: APIHealthResponse
     beforeEach(() => {
       nock.cleanAll()
-      apiHealthResponse = {
-        status: 'ok',
-        timestamp: new Date().toISOString(),
-        version: '0.1.0-beta3',
-        name: 'visionBoard'
-      }
+      apiHealthResponse = mockApiHealthResponse
     })
 
     it('should return success when API is available and compatible', async () => {
@@ -85,6 +81,97 @@ describe('CLI Commands', () => {
 
       expect(result.success).toBe(false)
       expect(result.messages).toContain('❌ API version is not compatible')
+      expect(result.messages).toHaveLength(1)
+    })
+  })
+
+  describe('addProjectWithGithubOrgs', () => {
+    let mockProject: APIProjectDetails
+    let mockGithubOrg1: APIGithubOrgDetails
+    let mockGithubOrg2: APIGithubOrgDetails
+
+    beforeEach(() => {
+      nock.cleanAll()
+
+      // Setup mock project data using fixtures
+      mockProject = { ...mockAPIProjectResponse }
+
+      // Create simplified GitHub org responses for tests
+      mockGithubOrg1 = { ...mockAPIGithubOrgResponse }
+
+      mockGithubOrg2 = {
+        ...mockAPIGithubOrgResponse,
+        id: 789,
+        name: 'org2',
+        login: 'org2'
+      }
+    })
+
+    it('should create a project and add GitHub organizations successfully', async () => {
+      // Mock API calls
+      nock('http://localhost:3000')
+        .post('/api/v1/project', { name: 'Test Project' })
+        .reply(201, mockProject)
+
+      nock('http://localhost:3000')
+        .post('/api/v1/project/123/gh-org', { githubOrgUrl: 'https://github.com/org1' })
+        .reply(201, mockGithubOrg1)
+
+      nock('http://localhost:3000')
+        .post('/api/v1/project/123/gh-org', { githubOrgUrl: 'https://github.com/org2' })
+        .reply(201, mockGithubOrg2)
+
+      // Execute the function
+      const result = await addProjectWithGithubOrgs('Test Project', [
+        'https://github.com/org1',
+        'https://github.com/org2'
+      ])
+
+      // Verify the result
+      expect(result.success).toBe(true)
+      expect(result.messages).toContain('✅ Project created successfully')
+      expect(result.messages).toHaveLength(1)
+      expect(nock.isDone()).toBe(true) // Verify all mocked endpoints were called
+    })
+
+    it('should handle failure when project creation fails', async () => {
+      // Mock failed project creation
+      nock('http://localhost:3000')
+        .post('/api/v1/project', { name: 'Existing Project' })
+        .reply(409, { errors: [{ message: 'Project already exists' }] } as APIErrorResponse)
+
+      // Execute the function
+      const result = await addProjectWithGithubOrgs('Existing Project', [
+        'https://github.com/org1'
+      ])
+
+      // Verify the result
+      expect(result.success).toBe(false)
+      expect(result.messages[0]).toContain('❌ Failed to create the project')
+      expect(result.messages[0]).toContain('Project (Existing Project) already exists')
+      expect(result.messages).toHaveLength(1)
+    })
+
+    it('should handle failure when adding GitHub organization fails', async () => {
+      // Mock API calls
+      nock('http://localhost:3000')
+        .post('/api/v1/project', { name: 'Test Project' })
+        .reply(201, mockProject)
+
+      // Mock failed GitHub org addition (already exists)
+      nock('http://localhost:3000')
+        .post('/api/v1/project/123/gh-org', { githubOrgUrl: 'https://github.com/existing-org' })
+        .reply(409, { errors: [{ message: 'GitHub organization already exists in the project' }] } as APIErrorResponse)
+
+      // Execute the function
+      const result = await addProjectWithGithubOrgs('Test Project', [
+        'https://github.com/existing-org'
+      ])
+
+      // Verify the result
+      expect(result.success).toBe(false)
+      expect(result.messages[0]).toContain('❌ Failed to create the project')
+      expect(result.messages[0]).toContain('GitHub organization (https://github.com/existing-org) already exists in the project')
       expect(result.messages).toHaveLength(1)
     })
   })

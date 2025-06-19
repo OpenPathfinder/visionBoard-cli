@@ -1,9 +1,10 @@
 #!/usr/bin/env node
 
 import { Command } from 'commander'
-
+// @ts-ignore
+import { stringToArray } from '@ulisesgascon/string-to-array'
 import { handleCommandResult } from './utils.js'
-import { getVersion, runDoctor } from './cli-commands.js'
+import { getVersion, runDoctor, addProjectWithGithubOrgs } from './cli-commands.js'
 
 const program = new Command()
 
@@ -19,6 +20,17 @@ program
   .action(async () => {
     console.log('Checking API availability...')
     const result = await runDoctor()
+    handleCommandResult(result)
+  })
+
+program
+  .command('add-project')
+  .description('Add a project with GitHub organizations')
+  .requiredOption('-n, --name <name>', 'Project name')
+  .option('-g, --github-orgs <githubOrgUrls...>', 'GitHub organization URLs')
+  .action(async (options) => {
+    const githubOrgs = options.githubOrgs ? stringToArray(options.githubOrgs[0]) : []
+    const result = await addProjectWithGithubOrgs(options.name, githubOrgs)
     handleCommandResult(result)
   })
 

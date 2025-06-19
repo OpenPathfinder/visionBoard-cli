@@ -38,6 +38,7 @@
     "typescript": "5.8.3"
   },
   "dependencies": {
+    "@ulisesgascon/string-to-array": "2.0.0",
     "commander": "14.0.0",
     "got": "14.4.7",
     "nock": "14.0.5",
