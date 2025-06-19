@@ -106,6 +106,20 @@ export interface APIProjectDetails {
 }
 
 /**
+ * Checklist schema
+ */
+export interface APIChecklistItem {
+  id: number
+  author: string
+  title: string
+  description: string
+  code_name: string
+  url: string
+  created_at: string
+  updated_at: string
+}
+
+/**
  * Error object as defined in the OpenAPI schema
  */
 export interface APIErrorObject {
