@@ -1,6 +1,6 @@
 import { CommandResult } from './types.js'
 import { isApiAvailable, isApiCompatible, getPackageJson } from './utils.js'
-import { getAPIDetails, createProject, addGithubOrgToProject } from './api-client.js'
+import { getAPIDetails, createProject, addGithubOrgToProject, getAllChecklistItems } from './api-client.js'
 
 const pkg = getPackageJson()
 
@@ -42,13 +42,39 @@ export const addProjectWithGithubOrgs = async (name: string, githubOrgUrls: stri
   let success = true
   try {
     const project = await createProject(name)
-    // Add GitHub organizations sequentially to avoid race conditions
     for (const githubOrgUrl of githubOrgUrls) {
       await addGithubOrgToProject(project.id, githubOrgUrl)
     }
     messages.push('✅ Project created successfully')
   } catch (error) {
     messages.push(`❌ Failed to create the project: ${error instanceof Error ? error.message : 'Unknown error'}`)
+    success = false
+  }
+
+  return {
+    messages,
+    success
+  }
+}
+
+export const printChecklists = async (): Promise<CommandResult> => {
+  const messages: string[] = []
+  let success = true
+  try {
+    const checklists = await getAllChecklistItems()
+    if (checklists.length === 0) {
+      messages.push('No compliance checklists found')
+      return {
+        messages,
+        success
+      }
+    }
+    messages.push('Compliance checklists:')
+    checklists.forEach((checklist) => {
+      messages.push(`- ${checklist.title} (${checklist.code_name}): ${checklist.description}. Docs: ${checklist.url}`)
+    })
+  } catch (error) {
+    messages.push(`❌ Failed to retrieve compliance checklist items: ${error instanceof Error ? error.message : 'Unknown error'}`)
     success = false
   }
 

@@ -1,9 +1,9 @@
 /* eslint-env jest */
 
-import { getVersion, runDoctor, addProjectWithGithubOrgs } from '../cli-commands.js'
+import { getVersion, runDoctor, addProjectWithGithubOrgs, printChecklists } from '../cli-commands.js'
 import { getPackageJson } from '../utils.js'
-import { APIHealthResponse, APIProjectDetails, APIGithubOrgDetails, APIErrorResponse } from '../types.js'
-import { mockApiHealthResponse, mockAPIProjectResponse, mockAPIGithubOrgResponse } from './fixtures.js'
+import { APIHealthResponse, APIProjectDetails, APIGithubOrgDetails, APIErrorResponse, APIChecklistItem } from '../types.js'
+import { mockApiHealthResponse, mockAPIProjectResponse, mockAPIGithubOrgResponse, mockAPIChecklistResponse } from './fixtures.js'
 import nock from 'nock'
 
 const pkg = getPackageJson()
@@ -173,6 +173,109 @@ describe('CLI Commands', () => {
       expect(result.messages[0]).toContain('❌ Failed to create the project')
       expect(result.messages[0]).toContain('GitHub organization (https://github.com/existing-org) already exists in the project')
       expect(result.messages).toHaveLength(1)
+    })
+  })
+
+  describe('printChecklists', () => {
+    let mockChecklists: APIChecklistItem[]
+
+    beforeEach(() => {
+      nock.cleanAll()
+      mockChecklists = [...mockAPIChecklistResponse]
+    })
+
+    it('should retrieve and format checklist items successfully', async () => {
+      // Mock API call
+      nock('http://localhost:3000')
+        .get('/api/v1/compliance-checklist')
+        .reply(200, mockChecklists)
+
+      // Execute the function
+      const result = await printChecklists()
+
+      // Verify the result
+      expect(result.success).toBe(true)
+      expect(result.messages[0]).toBe('Compliance checklists:')
+      expect(result.messages[1]).toContain(mockChecklists[0].title)
+      expect(result.messages[1]).toContain(mockChecklists[0].code_name)
+      expect(result.messages[1]).toContain(mockChecklists[0].description)
+      expect(result.messages[1]).toContain(mockChecklists[0].url)
+      expect(result.messages).toHaveLength(2) // Header + 1 checklist item
+      expect(nock.isDone()).toBe(true) // Verify all mocked endpoints were called
+    })
+
+    it('should handle multiple checklist items', async () => {
+      // Add a second checklist item
+      const secondChecklist = {
+        ...mockChecklists[0],
+        id: 456,
+        title: 'Second Checklist',
+        code_name: 'second-checklist',
+        description: 'Another checklist description',
+        url: 'https://api.visionboard.example.com/checklist/456'
+      }
+      mockChecklists.push(secondChecklist)
+
+      // Mock API call
+      nock('http://localhost:3000')
+        .get('/api/v1/compliance-checklist')
+        .reply(200, mockChecklists)
+
+      // Execute the function
+      const result = await printChecklists()
+
+      // Verify the result
+      expect(result.success).toBe(true)
+      expect(result.messages[0]).toBe('Compliance checklists:')
+      expect(result.messages[1]).toContain(mockChecklists[0].title)
+      expect(result.messages[2]).toContain(mockChecklists[1].title)
+      expect(result.messages).toHaveLength(3) // Header + 2 checklist items
+    })
+
+    it('should handle API errors gracefully', async () => {
+      // Mock API error
+      nock('http://localhost:3000')
+        .get('/api/v1/compliance-checklist')
+        .reply(500, { errors: [{ message: 'Internal server error' }] } as APIErrorResponse)
+
+      // Execute the function
+      const result = await printChecklists()
+
+      // Verify the result
+      expect(result.success).toBe(false)
+      expect(result.messages[0]).toContain('❌ Failed to retrieve compliance checklist items')
+      expect(result.messages).toHaveLength(1)
+    })
+
+    it('should handle network errors gracefully', async () => {
+      // Mock network error
+      nock('http://localhost:3000')
+        .get('/api/v1/compliance-checklist')
+        .replyWithError('Network error')
+
+      // Execute the function
+      const result = await printChecklists()
+
+      // Verify the result
+      expect(result.success).toBe(false)
+      expect(result.messages[0]).toContain('❌ Failed to retrieve compliance checklist items')
+      expect(result.messages[0]).toContain('Network error')
+      expect(result.messages).toHaveLength(1)
+    })
+
+    it('should handle empty checklist response', async () => {
+      // Mock empty response
+      nock('http://localhost:3000')
+        .get('/api/v1/compliance-checklist')
+        .reply(200, [])
+
+      // Execute the function
+      const result = await printChecklists()
+
+      // Verify the result
+      expect(result.success).toBe(true)
+      expect(result.messages).toHaveLength(1) // Only the header message
+      expect(result.messages[0]).toBe('No compliance checklists found')
     })
   })
 })
