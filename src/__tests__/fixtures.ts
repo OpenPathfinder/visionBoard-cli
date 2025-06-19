@@ -1,4 +1,4 @@
-import { APIHealthResponse, APIProjectDetails, APIGithubOrgDetails, APIChecklistItem, APICheckItem } from '../types.js'
+import { APIHealthResponse, APIProjectDetails, APIGithubOrgDetails, APIChecklistItem, APICheckItem, APIWorkflowItem } from '../types.js'
 
 export const mockApiHealthResponse: APIHealthResponse = {
   status: 'ok',
@@ -120,4 +120,9 @@ export const mockAPICheckResponse: APICheckItem[] = [{
   details_url: 'https://openpathfinder.com/docs/checks/annualDependencyRefresh',
   created_at: '2025-02-21T18:53:00.485Z',
   updated_at: '2025-02-21T18:53:00.485Z'
+}]
+
+export const mockAPIWorkflowResponse: APIWorkflowItem[] = [{
+  id: 'update-stuff',
+  description: 'Test workflow description'
 }]
