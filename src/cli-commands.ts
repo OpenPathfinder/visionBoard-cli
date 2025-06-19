@@ -1,6 +1,6 @@
 import { CommandResult } from './types.js'
 import { isApiAvailable, isApiCompatible, getPackageJson } from './utils.js'
-import { getAPIDetails, createProject, addGithubOrgToProject, getAllChecklistItems } from './api-client.js'
+import { getAPIDetails, createProject, addGithubOrgToProject, getAllChecklistItems, getAllChecks } from './api-client.js'
 
 const pkg = getPackageJson()
 
@@ -75,6 +75,33 @@ export const printChecklists = async (): Promise<CommandResult> => {
     })
   } catch (error) {
     messages.push(`❌ Failed to retrieve compliance checklist items: ${error instanceof Error ? error.message : 'Unknown error'}`)
+    success = false
+  }
+
+  return {
+    messages,
+    success
+  }
+}
+
+export const printChecks = async (): Promise<CommandResult> => {
+  const messages: string[] = []
+  let success = true
+  try {
+    const checks = await getAllChecks()
+    if (checks.length === 0) {
+      messages.push('No compliance checks found')
+      return {
+        messages,
+        success
+      }
+    }
+    messages.push('Compliance checks available:')
+    checks.forEach((check) => {
+      messages.push(`- ${check.code_name}: ${check.description}. ${check.details_url}`)
+    })
+  } catch (error) {
+    messages.push(`❌ Failed to retrieve compliance check items: ${error instanceof Error ? error.message : 'Unknown error'}`)
     success = false
   }
 

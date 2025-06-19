@@ -4,7 +4,7 @@ import { Command } from 'commander'
 // @ts-ignore
 import { stringToArray } from '@ulisesgascon/string-to-array'
 import { handleCommandResult } from './utils.js'
-import { getVersion, runDoctor, addProjectWithGithubOrgs, printChecklists } from './cli-commands.js'
+import { getVersion, runDoctor, addProjectWithGithubOrgs, printChecklists, printChecks } from './cli-commands.js'
 
 const program = new Command()
 
@@ -32,6 +32,18 @@ checklist
   .description('Print all available compliance checklists')
   .action(async () => {
     const result = await printChecklists()
+    handleCommandResult(result)
+  })
+
+const check = program
+  .command('compliance-check')
+  .description('Compliance check management')
+
+check
+  .command('list')
+  .description('Print all available compliance checks')
+  .action(async () => {
+    const result = await printChecks()
     handleCommandResult(result)
   })
 
