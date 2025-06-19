@@ -1,4 +1,4 @@
-import { APIHealthResponse, APIProjectDetails, APIGithubOrgDetails } from '../types.js'
+import { APIHealthResponse, APIProjectDetails, APIGithubOrgDetails, APIChecklistItem } from '../types.js'
 
 export const mockApiHealthResponse: APIHealthResponse = {
   status: 'ok',
@@ -93,3 +93,14 @@ export const mockAPIGithubOrgResponse: APIGithubOrgDetails = {
   updated_at: new Date().toISOString(),
   project_id: 123
 }
+
+export const mockAPIChecklistResponse: APIChecklistItem[] = [{
+  id: 123,
+  author: 'Ulises Gascón',
+  title: 'Test Checklist',
+  description: 'Test checklist description',
+  code_name: 'test-checklist',
+  url: 'https://api.visionboard.example.com/checklist/123',
+  created_at: new Date().toISOString(),
+  updated_at: new Date().toISOString()
+}]
