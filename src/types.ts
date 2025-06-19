@@ -142,6 +142,14 @@ export type APICheckItem = {
 };
 
 /**
+ * Workflow Schema
+ */
+export interface APIWorkflowItem {
+  id: string;
+  description: string;
+}
+
+/**
  * Error object as defined in the OpenAPI schema
  */
 export interface APIErrorObject {
