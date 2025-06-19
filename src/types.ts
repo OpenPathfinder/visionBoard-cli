@@ -120,6 +120,26 @@ export interface APIChecklistItem {
 }
 
 /**
+ * Check Schema
+ */
+export type APICheckItem = {
+  id: number;
+  title: string;
+  description: string;
+  default_section_number: string;
+  default_section_name: string;
+  code_name: string;
+  default_priority_group: 'P0' | 'P1' | 'P2' | 'P3' | 'P4' | 'P5' | 'P6' | 'P7' | 'P8' | 'P9' | 'P10' | 'P11' | 'P12' | 'P13' | 'P14' | 'R0' | 'R1' | 'R2' | 'R3' | 'R4' | 'R5' | 'R6' | 'R7' | 'R8' | 'R9' | 'R10' | 'R11' | 'R12' | 'R13' | 'R14';
+  is_c_scrm: boolean;
+  implementation_status: 'pending' | 'completed';
+  implementation_type: string | null;
+  implementation_details_reference: string | null;
+  details_url: string;
+  created_at: string;
+  updated_at: string;
+};
+
+/**
  * Error object as defined in the OpenAPI schema
  */
 export interface APIErrorObject {
