@@ -1,9 +1,9 @@
 /* eslint-env jest */
 
-import { getVersion, runDoctor, addProjectWithGithubOrgs, printChecklists, printChecks } from '../cli-commands.js'
+import { getVersion, runDoctor, addProjectWithGithubOrgs, printChecklists, printChecks, printWorkflows } from '../cli-commands.js'
 import { getPackageJson } from '../utils.js'
-import { APIHealthResponse, APIProjectDetails, APIGithubOrgDetails, APIErrorResponse, APIChecklistItem, APICheckItem } from '../types.js'
-import { mockApiHealthResponse, mockAPIProjectResponse, mockAPIGithubOrgResponse, mockAPIChecklistResponse, mockAPICheckResponse } from './fixtures.js'
+import { APIHealthResponse, APIProjectDetails, APIGithubOrgDetails, APIErrorResponse, APIChecklistItem, APICheckItem, APIWorkflowItem } from '../types.js'
+import { mockApiHealthResponse, mockAPIProjectResponse, mockAPIGithubOrgResponse, mockAPIChecklistResponse, mockAPICheckResponse, mockAPIWorkflowResponse } from './fixtures.js'
 import nock from 'nock'
 
 const pkg = getPackageJson()
@@ -378,6 +378,104 @@ describe('CLI Commands', () => {
       expect(result.success).toBe(true)
       expect(result.messages).toHaveLength(1) // Only the header message
       expect(result.messages[0]).toBe('No compliance checks found')
+    })
+  })
+
+  describe('printWorkflows', () => {
+    let mockWorkflows: APIWorkflowItem[]
+
+    beforeEach(() => {
+      nock.cleanAll()
+      mockWorkflows = [...mockAPIWorkflowResponse]
+    })
+
+    it('should retrieve and format workflow items successfully', async () => {
+      // Mock API call
+      nock('http://localhost:3000')
+        .get('/api/v1/workflow')
+        .reply(200, mockWorkflows)
+
+      // Execute the function
+      const result = await printWorkflows()
+
+      // Verify the result
+      expect(result.success).toBe(true)
+      expect(result.messages[0]).toBe('Compliance workflows available:')
+      expect(result.messages[1]).toContain(mockWorkflows[0].id)
+      expect(result.messages[1]).toContain(mockWorkflows[0].description)
+      expect(result.messages).toHaveLength(2) // Header + 1 workflow item
+      expect(nock.isDone()).toBe(true) // Verify all mocked endpoints were called
+    })
+
+    it('should handle multiple workflow items', async () => {
+      // Add a second workflow item
+      const secondWorkflow = {
+        ...mockWorkflows[0],
+        id: 'create-stuff',
+        description: 'Another workflow description'
+      }
+      mockWorkflows.push(secondWorkflow)
+
+      // Mock API call
+      nock('http://localhost:3000')
+        .get('/api/v1/workflow')
+        .reply(200, mockWorkflows)
+
+      // Execute the function
+      const result = await printWorkflows()
+
+      // Verify the result
+      expect(result.success).toBe(true)
+      expect(result.messages[0]).toBe('Compliance workflows available:')
+      expect(result.messages[1]).toContain(mockWorkflows[0].id)
+      expect(result.messages[2]).toContain(mockWorkflows[1].id)
+      expect(result.messages).toHaveLength(3) // Header + 2 workflow items
+    })
+
+    it('should handle API errors gracefully', async () => {
+      // Mock API error
+      nock('http://localhost:3000')
+        .get('/api/v1/workflow')
+        .reply(500, { errors: [{ message: 'Internal server error' }] } as APIErrorResponse)
+
+      // Execute the function
+      const result = await printWorkflows()
+
+      // Verify the result
+      expect(result.success).toBe(false)
+      expect(result.messages[0]).toContain('❌ Failed to retrieve compliance workflow items')
+      expect(result.messages).toHaveLength(1)
+    })
+
+    it('should handle network errors gracefully', async () => {
+      // Mock network error
+      nock('http://localhost:3000')
+        .get('/api/v1/workflow')
+        .replyWithError('Network error')
+
+      // Execute the function
+      const result = await printWorkflows()
+
+      // Verify the result
+      expect(result.success).toBe(false)
+      expect(result.messages[0]).toContain('❌ Failed to retrieve compliance workflow items')
+      expect(result.messages[0]).toContain('Network error')
+      expect(result.messages).toHaveLength(1)
+    })
+
+    it('should handle empty workflow response', async () => {
+      // Mock empty response
+      nock('http://localhost:3000')
+        .get('/api/v1/workflow')
+        .reply(200, [])
+
+      // Execute the function
+      const result = await printWorkflows()
+
+      // Verify the result
+      expect(result.success).toBe(true)
+      expect(result.messages).toHaveLength(1) // Only the header message
+      expect(result.messages[0]).toBe('No compliance workflows found')
     })
   })
 })
