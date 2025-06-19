@@ -1,6 +1,6 @@
 import { getConfig } from './utils.js'
 import { got } from 'got'
-import { APIHealthResponse, APIProjectDetails, APIGithubOrgDetails } from './types.js'
+import { APIHealthResponse, APIProjectDetails, APIGithubOrgDetails, APIChecklistItem } from './types.js'
 
 export const apiClient = () => {
   const config = getConfig()
@@ -51,4 +51,13 @@ export const addGithubOrgToProject = async (projectId: number, githubOrgUrl: str
     throw new Error(`Failed to add the GitHub organization (${githubOrgUrl}) to the project: ${response.statusCode} ${response.body}`)
   }
   return response.body as APIGithubOrgDetails
+}
+
+export const getAllChecklistItems = async (): Promise<APIChecklistItem[]> => {
+  const client = apiClient()
+  const response = await client.get('compliance-checklist', { responseType: 'json' })
+  if (response.statusCode !== 200) {
+    throw new Error(`Failed to get the data from the API: ${response.statusCode} ${response.body}`)
+  }
+  return response.body as APIChecklistItem[]
 }
