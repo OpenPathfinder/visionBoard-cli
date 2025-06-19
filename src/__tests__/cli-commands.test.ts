@@ -1,9 +1,9 @@
 /* eslint-env jest */
 
-import { getVersion, runDoctor, addProjectWithGithubOrgs, printChecklists } from '../cli-commands.js'
+import { getVersion, runDoctor, addProjectWithGithubOrgs, printChecklists, printChecks } from '../cli-commands.js'
 import { getPackageJson } from '../utils.js'
-import { APIHealthResponse, APIProjectDetails, APIGithubOrgDetails, APIErrorResponse, APIChecklistItem } from '../types.js'
-import { mockApiHealthResponse, mockAPIProjectResponse, mockAPIGithubOrgResponse, mockAPIChecklistResponse } from './fixtures.js'
+import { APIHealthResponse, APIProjectDetails, APIGithubOrgDetails, APIErrorResponse, APIChecklistItem, APICheckItem } from '../types.js'
+import { mockApiHealthResponse, mockAPIProjectResponse, mockAPIGithubOrgResponse, mockAPIChecklistResponse, mockAPICheckResponse } from './fixtures.js'
 import nock from 'nock'
 
 const pkg = getPackageJson()
@@ -276,6 +276,108 @@ describe('CLI Commands', () => {
       expect(result.success).toBe(true)
       expect(result.messages).toHaveLength(1) // Only the header message
       expect(result.messages[0]).toBe('No compliance checklists found')
+    })
+  })
+
+  describe('printChecks', () => {
+    let mockChecks: APICheckItem[]
+
+    beforeEach(() => {
+      nock.cleanAll()
+      mockChecks = [...mockAPICheckResponse]
+    })
+
+    it('should retrieve and format check items successfully', async () => {
+      // Mock API call
+      nock('http://localhost:3000')
+        .get('/api/v1/compliance-check')
+        .reply(200, mockChecks)
+
+      // Execute the function
+      const result = await printChecks()
+
+      // Verify the result
+      expect(result.success).toBe(true)
+      expect(result.messages[0]).toBe('Compliance checks available:')
+      expect(result.messages[1]).toContain(mockChecks[0].code_name)
+      expect(result.messages[1]).toContain(mockChecks[0].description)
+      expect(result.messages[1]).toContain(mockChecks[0].details_url)
+      expect(result.messages).toHaveLength(2) // Header + 1 check item
+      expect(nock.isDone()).toBe(true) // Verify all mocked endpoints were called
+    })
+
+    it('should handle multiple check items', async () => {
+      // Add a second check item
+      const secondCheck = {
+        ...mockChecks[0],
+        id: 456,
+        title: 'Second Check',
+        code_name: 'secondCheck',
+        description: 'Another check description',
+        details_url: 'https://openpathfinder.com/docs/checks/secondCheck'
+      }
+      mockChecks.push(secondCheck)
+
+      // Mock API call
+      nock('http://localhost:3000')
+        .get('/api/v1/compliance-check')
+        .reply(200, mockChecks)
+
+      // Execute the function
+      const result = await printChecks()
+
+      // Verify the result
+      expect(result.success).toBe(true)
+      expect(result.messages[0]).toBe('Compliance checks available:')
+      expect(result.messages[1]).toContain(mockChecks[0].code_name)
+      expect(result.messages[2]).toContain(mockChecks[1].code_name)
+      expect(result.messages).toHaveLength(3) // Header + 2 check items
+    })
+
+    it('should handle API errors gracefully', async () => {
+      // Mock API error
+      nock('http://localhost:3000')
+        .get('/api/v1/compliance-check')
+        .reply(500, { errors: [{ message: 'Internal server error' }] } as APIErrorResponse)
+
+      // Execute the function
+      const result = await printChecks()
+
+      // Verify the result
+      expect(result.success).toBe(false)
+      expect(result.messages[0]).toContain('❌ Failed to retrieve compliance check items')
+      expect(result.messages).toHaveLength(1)
+    })
+
+    it('should handle network errors gracefully', async () => {
+      // Mock network error
+      nock('http://localhost:3000')
+        .get('/api/v1/compliance-check')
+        .replyWithError('Network error')
+
+      // Execute the function
+      const result = await printChecks()
+
+      // Verify the result
+      expect(result.success).toBe(false)
+      expect(result.messages[0]).toContain('❌ Failed to retrieve compliance check items')
+      expect(result.messages[0]).toContain('Network error')
+      expect(result.messages).toHaveLength(1)
+    })
+
+    it('should handle empty check response', async () => {
+      // Mock empty response
+      nock('http://localhost:3000')
+        .get('/api/v1/compliance-check')
+        .reply(200, [])
+
+      // Execute the function
+      const result = await printChecks()
+
+      // Verify the result
+      expect(result.success).toBe(true)
+      expect(result.messages).toHaveLength(1) // Only the header message
+      expect(result.messages[0]).toBe('No compliance checks found')
     })
   })
 })

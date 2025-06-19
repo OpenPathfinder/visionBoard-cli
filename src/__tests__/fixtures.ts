@@ -1,4 +1,4 @@
-import { APIHealthResponse, APIProjectDetails, APIGithubOrgDetails, APIChecklistItem } from '../types.js'
+import { APIHealthResponse, APIProjectDetails, APIGithubOrgDetails, APIChecklistItem, APICheckItem } from '../types.js'
 
 export const mockApiHealthResponse: APIHealthResponse = {
   status: 'ok',
@@ -103,4 +103,21 @@ export const mockAPIChecklistResponse: APIChecklistItem[] = [{
   url: 'https://api.visionboard.example.com/checklist/123',
   created_at: new Date().toISOString(),
   updated_at: new Date().toISOString()
+}]
+
+export const mockAPICheckResponse: APICheckItem[] = [{
+  id: 53,
+  title: 'Refresh dependencies with annual releases',
+  description: 'Ensure dependencies are refreshed through a new release at least once annually',
+  default_section_number: '5',
+  default_section_name: 'vulnerability management',
+  code_name: 'annualDependencyRefresh',
+  default_priority_group: 'P14',
+  is_c_scrm: true,
+  implementation_status: 'completed',
+  implementation_type: 'manual',
+  implementation_details_reference: 'https://github.com/OpenPathfinder/visionBoard/issues/112',
+  details_url: 'https://openpathfinder.com/docs/checks/annualDependencyRefresh',
+  created_at: '2025-02-21T18:53:00.485Z',
+  updated_at: '2025-02-21T18:53:00.485Z'
 }]
