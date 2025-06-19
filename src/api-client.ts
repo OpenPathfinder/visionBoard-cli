@@ -1,6 +1,6 @@
 import { getConfig } from './utils.js'
 import { got } from 'got'
-import { APIHealthResponse, APIProjectDetails, APIGithubOrgDetails, APIChecklistItem } from './types.js'
+import { APIHealthResponse, APIProjectDetails, APIGithubOrgDetails, APIChecklistItem, APICheckItem } from './types.js'
 
 export const apiClient = () => {
   const config = getConfig()
@@ -60,4 +60,13 @@ export const getAllChecklistItems = async (): Promise<APIChecklistItem[]> => {
     throw new Error(`Failed to get the data from the API: ${response.statusCode} ${response.body}`)
   }
   return response.body as APIChecklistItem[]
+}
+
+export const getAllChecks = async (): Promise<APICheckItem[]> => {
+  const client = apiClient()
+  const response = await client.get('compliance-check', { responseType: 'json' })
+  if (response.statusCode !== 200) {
+    throw new Error(`Failed to get the data from the API: ${response.statusCode} ${response.body}`)
+  }
+  return response.body as APICheckItem[]
 }
