@@ -432,6 +432,32 @@ describe('CLI Commands', () => {
       expect(result.messages).toHaveLength(3) // Header + 2 workflow items
     })
 
+    it('should handle disabled workflows', async () => {
+      // Add a second workflow item
+      const secondWorkflow = {
+        ...mockWorkflows[0],
+        id: 'create-stuff',
+        description: 'Another workflow description',
+        isEnabled: false
+      }
+      mockWorkflows.push(secondWorkflow)
+
+      // Mock API call
+      nock('http://localhost:3000')
+        .get('/api/v1/workflow')
+        .reply(200, mockWorkflows)
+
+      // Execute the function
+      const result = await printWorkflows()
+
+      // Verify the result
+      expect(result.success).toBe(true)
+      expect(result.messages[0]).toBe('Compliance workflows available:')
+      expect(result.messages[1]).toContain(mockWorkflows[0].id)
+      expect(result.messages[1]).toContain(mockWorkflows[0].description)
+      expect(result.messages).toHaveLength(2) // Header + 1 enabled workflow item
+    })
+
     it('should handle API errors gracefully', async () => {
       // Mock API error
       nock('http://localhost:3000')

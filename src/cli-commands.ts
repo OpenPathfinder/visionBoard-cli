@@ -125,7 +125,9 @@ export const printWorkflows = async (): Promise<CommandResult> => {
     }
     messages.push('Compliance workflows available:')
     workflows.forEach((workflow) => {
-      messages.push(`- ${workflow.id}: ${workflow.description}`)
+      if (workflow.isEnabled) {
+        messages.push(`- ${workflow.id}: ${workflow.description}`)
+      }
     })
   } catch (error) {
     messages.push(`❌ Failed to retrieve compliance workflow items: ${error instanceof Error ? error.message : 'Unknown error'}`)
