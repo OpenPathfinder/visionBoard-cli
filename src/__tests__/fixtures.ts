@@ -124,5 +124,8 @@ export const mockAPICheckResponse: APICheckItem[] = [{
 
 export const mockAPIWorkflowResponse: APIWorkflowItem[] = [{
   id: 'update-stuff',
-  description: 'Test workflow description'
+  description: 'Test workflow description',
+  isEnabled: true,
+  isRequiredAdditionalData: false,
+  operations: null
 }]

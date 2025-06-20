@@ -142,11 +142,23 @@ export type APICheckItem = {
 };
 
 /**
+ * Workflow Operation Schema
+ */
+interface WorkflowOperationItem {
+  id: string;
+  description: string;
+  schema: string;
+}
+
+/**
  * Workflow Schema
  */
 export interface APIWorkflowItem {
   id: string;
   description: string;
+  isEnabled: boolean;
+  isRequiredAdditionalData: boolean;
+  operations: WorkflowOperationItem[] | null;
 }
 
 /**
