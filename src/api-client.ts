@@ -1,6 +1,6 @@
 import { getConfig } from './utils.js'
 import { got } from 'got'
-import { APIHealthResponse, APIProjectDetails, APIGithubOrgDetails, APIChecklistItem, APICheckItem, APIWorkflowItem } from './types.js'
+import { APIHealthResponse, APIProjectDetails, APIGithubOrgDetails, APIChecklistItem, APICheckItem, APIWorkflowItem, APIWorkflowRunItem } from './types.js'
 
 export const apiClient = () => {
   const config = getConfig()
@@ -78,4 +78,17 @@ export const getAllWorkflows = async (): Promise<APIWorkflowItem[]> => {
     throw new Error(`Failed to get the data from the API: ${response.statusCode} ${response.body}`)
   }
   return response.body as APIWorkflowItem[]
+}
+
+export const runWorkflow = async (workflowId: string, data: any): Promise<APIWorkflowRunItem> => {
+  const client = apiClient()
+  const payload = data ? { data } : {}
+  const response = await client.post(`workflow/${workflowId}/run`, {
+    json: payload,
+    responseType: 'json'
+  })
+  if (response.statusCode !== 202) {
+    throw new Error(`Failed to run the workflow: ${response.statusCode} ${response.body}`)
+  }
+  return response.body as APIWorkflowRunItem
 }
