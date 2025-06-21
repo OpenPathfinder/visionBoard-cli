@@ -164,6 +164,17 @@ export interface APIWorkflowItem {
 }
 
 /**
+ * Workflow Run Schema
+ */
+export interface APIWorkflowRunItem {
+  status: string;
+  started: string;
+  finished: string;
+  completed: string;
+  result: { success: boolean; message: string };
+}
+
+/**
  * Error object as defined in the OpenAPI schema
  */
 export interface APIErrorObject {
