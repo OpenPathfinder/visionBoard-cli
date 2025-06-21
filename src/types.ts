@@ -142,11 +142,36 @@ export type APICheckItem = {
 };
 
 /**
+ * Workflow Operation Schema
+ * @TODO: Move or reuse with bulk-import endpoint is created.
+ */
+interface WorkflowOperationItem {
+  id: string;
+  description: string;
+  schema: string;
+}
+
+/**
  * Workflow Schema
  */
 export interface APIWorkflowItem {
   id: string;
   description: string;
+  isEnabled: boolean;
+  isRequiredAdditionalData: boolean;
+  schema: string | null;
+  operations: WorkflowOperationItem[] | null;
+}
+
+/**
+ * Workflow Run Schema
+ */
+export interface APIWorkflowRunItem {
+  status: string;
+  started: string;
+  finished: string;
+  completed: string;
+  result: { success: boolean; message: string };
 }
 
 /**

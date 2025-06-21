@@ -1,6 +1,6 @@
 import { CommandResult } from './types.js'
 import { isApiAvailable, isApiCompatible, getPackageJson } from './utils.js'
-import { getAPIDetails, createProject, addGithubOrgToProject, getAllChecklistItems, getAllChecks, getAllWorkflows } from './api-client.js'
+import { getAPIDetails, createProject, addGithubOrgToProject, getAllChecklistItems, getAllChecks, getAllWorkflows, runWorkflow } from './api-client.js'
 
 const pkg = getPackageJson()
 
@@ -125,10 +125,38 @@ export const printWorkflows = async (): Promise<CommandResult> => {
     }
     messages.push('Compliance workflows available:')
     workflows.forEach((workflow) => {
-      messages.push(`- ${workflow.id}: ${workflow.description}`)
+      if (workflow.isEnabled) {
+        messages.push(`- ${workflow.id}: ${workflow.description}`)
+      }
     })
   } catch (error) {
     messages.push(`❌ Failed to retrieve compliance workflow items: ${error instanceof Error ? error.message : 'Unknown error'}`)
+    success = false
+  }
+
+  return {
+    messages,
+    success
+  }
+}
+
+export const executeWorkflow = async (workflowId: string, data: any): Promise<CommandResult> => {
+  const messages: string[] = []
+  let success = true
+  try {
+    const results = await runWorkflow(workflowId, data)
+    const startTime = new Date(results.started)
+    const endTime = new Date(results.finished)
+    const duration = endTime.getTime() - startTime.getTime()
+    const durationStr = duration < 1000 ? `${duration} ms` : `${(duration / 1000).toFixed(2)} seconds`
+
+    messages.push(`Workflow executed ${results.result.success ? 'successfully' : 'unsuccessfully'} in ${durationStr}`)
+    messages.push(`- Status: ${results.status}`)
+    messages.push(`- Started: ${startTime}`)
+    messages.push(`- Finished: ${endTime}`)
+    messages.push(`- Result: ${results.result.message}`)
+  } catch (error) {
+    messages.push(`❌ Failed to execute the workflow: ${error instanceof Error ? error.message : 'Unknown error'}`)
     success = false
   }
 

@@ -39,6 +39,8 @@
   },
   "dependencies": {
     "@ulisesgascon/string-to-array": "2.0.0",
+    "ajv": "8.17.1",
+    "ajv-formats": "3.0.1",
     "commander": "14.0.0",
     "got": "14.4.7",
     "nock": "14.0.5",

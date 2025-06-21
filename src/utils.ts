@@ -3,6 +3,13 @@ import { Config, APIHealthResponse, CommandResult } from './types.js'
 import { readFileSync } from 'fs'
 import { fileURLToPath } from 'url'
 import { dirname, join } from 'path'
+import Ajv from 'ajv'
+import addFormats from 'ajv-formats'
+
+// Use type assertions to bypass TypeScript errors
+// @TODO: Remove type assertions when ajv-formats is updated
+const ajv = new (Ajv as any)()
+;(addFormats as any)(ajv)
 
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = dirname(__filename)
@@ -41,5 +48,20 @@ export const handleCommandResult = (result: CommandResult) => {
   } else {
     console.error(result.messages.join('\n'))
     process.exit(1)
+  }
+}
+
+export const validateData = (data: any, schema: any) => {
+  const validate = ajv.compile(schema)
+  const valid = validate(data)
+  if (!valid) {
+    return {
+      success: false,
+      messages: validate.errors?.map((error: any) => error.message) || []
+    }
+  }
+  return {
+    success: true,
+    messages: []
   }
 }
