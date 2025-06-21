@@ -1,4 +1,4 @@
-import { APIHealthResponse, APIProjectDetails, APIGithubOrgDetails, APIChecklistItem, APICheckItem, APIWorkflowItem } from '../types.js'
+import { APIHealthResponse, APIProjectDetails, APIGithubOrgDetails, APIChecklistItem, APICheckItem, APIWorkflowItem, APIWorkflowRunItem } from '../types.js'
 
 export const mockApiHealthResponse: APIHealthResponse = {
   status: 'ok',
@@ -130,3 +130,11 @@ export const mockAPIWorkflowResponse: APIWorkflowItem[] = [{
   operations: null,
   schema: null
 }]
+
+export const mockAPIWorkflowRunResponse: APIWorkflowRunItem = {
+  status: 'completed',
+  started: '2025-06-21T10:05:00.000Z',
+  finished: '2025-06-21T10:05:02.500Z',
+  completed: '2025-06-21T10:05:02.500Z',
+  result: { success: true, message: 'Workflow completed successfully' }
+}
