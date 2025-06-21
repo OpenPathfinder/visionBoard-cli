@@ -1,9 +1,9 @@
 /* eslint-env jest */
 
-import { getVersion, runDoctor, addProjectWithGithubOrgs, printChecklists, printChecks, printWorkflows } from '../cli-commands.js'
+import { getVersion, runDoctor, addProjectWithGithubOrgs, printChecklists, printChecks, printWorkflows, executeWorkflow } from '../cli-commands.js'
 import { getPackageJson } from '../utils.js'
-import { APIHealthResponse, APIProjectDetails, APIGithubOrgDetails, APIErrorResponse, APIChecklistItem, APICheckItem, APIWorkflowItem } from '../types.js'
-import { mockApiHealthResponse, mockAPIProjectResponse, mockAPIGithubOrgResponse, mockAPIChecklistResponse, mockAPICheckResponse, mockAPIWorkflowResponse } from './fixtures.js'
+import { APIHealthResponse, APIProjectDetails, APIGithubOrgDetails, APIErrorResponse, APIChecklistItem, APICheckItem, APIWorkflowItem, APIWorkflowRunItem } from '../types.js'
+import { mockApiHealthResponse, mockAPIProjectResponse, mockAPIGithubOrgResponse, mockAPIChecklistResponse, mockAPICheckResponse, mockAPIWorkflowResponse, mockAPIWorkflowRunResponse } from './fixtures.js'
 import nock from 'nock'
 
 const pkg = getPackageJson()
@@ -502,6 +502,88 @@ describe('CLI Commands', () => {
       expect(result.success).toBe(true)
       expect(result.messages).toHaveLength(1) // Only the header message
       expect(result.messages[0]).toBe('No compliance workflows found')
+    })
+  })
+
+  describe('executeWorkflow', () => {
+    let workflowRunResponse: APIWorkflowRunItem
+
+    beforeEach(() => {
+      nock.cleanAll()
+
+      // Setup mock workflow run response
+      workflowRunResponse = { ...mockAPIWorkflowRunResponse }
+    })
+
+    it('should execute a workflow successfully', async () => {
+      // Mock API call
+      nock('http://localhost:3000')
+        .post('/api/v1/workflow/update-stuff/run', { data: { projectId: 123 } })
+        .reply(202, workflowRunResponse)
+
+      // Execute the function
+      const result = await executeWorkflow('update-stuff', { projectId: 123 })
+
+      // Verify the result
+      expect(result.success).toBe(true)
+      expect(result.messages).toHaveLength(5) // 5 messages with details
+      expect(result.messages[0]).toContain('Workflow executed successfully in 2500 ms')
+      expect(result.messages[1]).toContain('Status: completed')
+      expect(result.messages[2]).toContain('Started:')
+      expect(result.messages[3]).toContain('Finished:')
+      expect(result.messages[4]).toContain('Result:')
+      expect(nock.isDone()).toBe(true) // Verify all mocked endpoints were called
+    })
+
+    it('Should execute a workflow that was unsuccessful', async () => {
+      // Mock API call
+      nock('http://localhost:3000')
+        .post('/api/v1/workflow/update-stuff/run', { data: { projectId: 123 } })
+        .reply(202, { ...workflowRunResponse, status: 'failed', result: { message: 'Failed to execute workflow', success: false } })
+
+      // Execute the function
+      const result = await executeWorkflow('update-stuff', { projectId: 123 })
+
+      // Verify the result
+      expect(result.success).toBe(true)
+      expect(result.messages).toHaveLength(5) // 5 messages with details
+      expect(result.messages[0]).toContain('Workflow executed unsuccessfully in 2500 ms')
+      expect(result.messages[1]).toContain('Status: failed')
+      expect(result.messages[2]).toContain('Started:')
+      expect(result.messages[3]).toContain('Finished:')
+      expect(result.messages[4]).toContain('Result:')
+      expect(nock.isDone()).toBe(true) // Verify all mocked endpoints were called
+    })
+
+    it('should handle API errors gracefully', async () => {
+      // Mock API error
+      nock('http://localhost:3000')
+        .post('/api/v1/workflow/invalid-workflow/run')
+        .reply(404, { errors: [{ message: 'Workflow not found' }] } as APIErrorResponse)
+
+      // Execute the function
+      const result = await executeWorkflow('invalid-workflow', {})
+
+      // Verify the result
+      expect(result.success).toBe(false)
+      expect(result.messages[0]).toContain('❌ Failed to execute the workflow')
+      expect(result.messages).toHaveLength(1)
+    })
+
+    it('should handle network errors gracefully', async () => {
+      // Mock network error
+      nock('http://localhost:3000')
+        .post('/api/v1/workflow/update-stuff/run')
+        .replyWithError('Network error')
+
+      // Execute the function
+      const result = await executeWorkflow('update-stuff', {})
+
+      // Verify the result
+      expect(result.success).toBe(false)
+      expect(result.messages[0]).toContain('❌ Failed to execute the workflow')
+      expect(result.messages[0]).toContain('Network error')
+      expect(result.messages).toHaveLength(1)
     })
   })
 })

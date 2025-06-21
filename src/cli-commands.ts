@@ -1,6 +1,6 @@
 import { CommandResult } from './types.js'
 import { isApiAvailable, isApiCompatible, getPackageJson } from './utils.js'
-import { getAPIDetails, createProject, addGithubOrgToProject, getAllChecklistItems, getAllChecks, getAllWorkflows } from './api-client.js'
+import { getAPIDetails, createProject, addGithubOrgToProject, getAllChecklistItems, getAllChecks, getAllWorkflows, runWorkflow } from './api-client.js'
 
 const pkg = getPackageJson()
 
@@ -131,6 +131,31 @@ export const printWorkflows = async (): Promise<CommandResult> => {
     })
   } catch (error) {
     messages.push(`❌ Failed to retrieve compliance workflow items: ${error instanceof Error ? error.message : 'Unknown error'}`)
+    success = false
+  }
+
+  return {
+    messages,
+    success
+  }
+}
+
+export const executeWorkflow = async (workflowId: string, data: any): Promise<CommandResult> => {
+  const messages: string[] = []
+  let success = true
+  try {
+    const results = await runWorkflow(workflowId, data)
+    const startTime = new Date(results.started)
+    const endTime = new Date(results.finished)
+    const duration = endTime.getTime() - startTime.getTime()
+
+    messages.push(`Workflow executed ${results.result.success ? 'successfully' : 'unsuccessfully'} in ${duration} ms`)
+    messages.push(`- Status: ${results.status}`)
+    messages.push(`- Started: ${startTime}`)
+    messages.push(`- Finished: ${endTime}`)
+    messages.push(`- Result: ${results.result.message}`)
+  } catch (error) {
+    messages.push(`❌ Failed to execute the workflow: ${error instanceof Error ? error.message : 'Unknown error'}`)
     success = false
   }
 
