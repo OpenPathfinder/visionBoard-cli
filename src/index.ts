@@ -56,13 +56,18 @@ workflow
     }
     // Check if workflow requires additional data and if it is provided or requires collection
     if (workflow.isRequiredAdditionalData && (!options.data && !options.file)) {
-      throw new Error('Workflow does not require additional data. Please remove -d or -f options')
+      throw new Error('Workflow requires additional data. Please provide data using -d or -f option')
     } else if (options.data && options.file) {
       throw new Error('Please provide either -d or -f, not both')
     } else if (options.data) {
       data = options.data
     } else if (options.file) {
-      data = JSON.parse(fs.readFileSync(options.file, 'utf-8'))
+      try {
+        const fileContent = fs.readFileSync(options.file, 'utf-8')
+        data = JSON.parse(fileContent)
+      } catch (error) {
+        throw new Error(`Failed to read or parse file: ${error instanceof Error ? error.message : 'Unknown error'}`)
+      }
     }
 
     // If data is provided, validate against JSON Schema

@@ -148,8 +148,9 @@ export const executeWorkflow = async (workflowId: string, data: any): Promise<Co
     const startTime = new Date(results.started)
     const endTime = new Date(results.finished)
     const duration = endTime.getTime() - startTime.getTime()
+    const durationStr = duration < 1000 ? `${duration} ms` : `${(duration / 1000).toFixed(2)} seconds`
 
-    messages.push(`Workflow executed ${results.result.success ? 'successfully' : 'unsuccessfully'} in ${duration} ms`)
+    messages.push(`Workflow executed ${results.result.success ? 'successfully' : 'unsuccessfully'} in ${durationStr}`)
     messages.push(`- Status: ${results.status}`)
     messages.push(`- Started: ${startTime}`)
     messages.push(`- Finished: ${endTime}`)

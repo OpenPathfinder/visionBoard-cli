@@ -527,7 +527,7 @@ describe('CLI Commands', () => {
       // Verify the result
       expect(result.success).toBe(true)
       expect(result.messages).toHaveLength(5) // 5 messages with details
-      expect(result.messages[0]).toContain('Workflow executed successfully in 2500 ms')
+      expect(result.messages[0]).toContain('Workflow executed successfully in 2.50 seconds')
       expect(result.messages[1]).toContain('Status: completed')
       expect(result.messages[2]).toContain('Started:')
       expect(result.messages[3]).toContain('Finished:')
@@ -547,7 +547,7 @@ describe('CLI Commands', () => {
       // Verify the result
       expect(result.success).toBe(true)
       expect(result.messages).toHaveLength(5) // 5 messages with details
-      expect(result.messages[0]).toContain('Workflow executed unsuccessfully in 2500 ms')
+      expect(result.messages[0]).toContain('Workflow executed unsuccessfully in 2.50 seconds')
       expect(result.messages[1]).toContain('Status: failed')
       expect(result.messages[2]).toContain('Started:')
       expect(result.messages[3]).toContain('Finished:')
