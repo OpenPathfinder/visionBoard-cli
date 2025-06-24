@@ -1,6 +1,6 @@
 import { CommandResult } from './types.js'
 import { isApiAvailable, isApiCompatible, getPackageJson } from './utils.js'
-import { getAPIDetails, createProject, addGithubOrgToProject, getAllChecklistItems, getAllChecks, getAllWorkflows, runWorkflow } from './api-client.js'
+import { getAPIDetails, createProject, addGithubOrgToProject, getAllChecklistItems, getAllChecks, getAllWorkflows, getAllBulkImportOperations, runWorkflow } from './api-client.js'
 
 const pkg = getPackageJson()
 
@@ -157,6 +157,33 @@ export const executeWorkflow = async (workflowId: string, data: any): Promise<Co
     messages.push(`- Result: ${results.result.message}`)
   } catch (error) {
     messages.push(`❌ Failed to execute the workflow: ${error instanceof Error ? error.message : 'Unknown error'}`)
+    success = false
+  }
+
+  return {
+    messages,
+    success
+  }
+}
+
+export const printBulkImportOperations = async (): Promise<CommandResult> => {
+  const messages: string[] = []
+  let success = true
+  try {
+    const operations = await getAllBulkImportOperations()
+    if (operations.length === 0) {
+      messages.push('No bulk import operations found')
+      return {
+        messages,
+        success
+      }
+    }
+    messages.push('Bulk import operations available:')
+    operations.forEach((operation) => {
+      messages.push(`- ${operation.id}: ${operation.description}`)
+    })
+  } catch (error) {
+    messages.push(`❌ Failed to retrieve bulk import operation items: ${error instanceof Error ? error.message : 'Unknown error'}`)
     success = false
   }
 

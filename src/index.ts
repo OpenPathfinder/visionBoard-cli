@@ -6,7 +6,7 @@ import { stringToArray } from '@ulisesgascon/string-to-array'
 import { handleCommandResult, validateData } from './utils.js'
 import { getAllWorkflows } from './api-client.js'
 import fs from 'fs'
-import { getVersion, runDoctor, addProjectWithGithubOrgs, printChecklists, printChecks, printWorkflows, executeWorkflow } from './cli-commands.js'
+import { getVersion, runDoctor, addProjectWithGithubOrgs, printChecklists, printChecks, printWorkflows, executeWorkflow, printBulkImportOperations } from './cli-commands.js'
 
 const program = new Command()
 
@@ -22,6 +22,18 @@ program
   .action(async () => {
     console.log('Checking API availability...')
     const result = await runDoctor()
+    handleCommandResult(result)
+  })
+
+const bulkImport = program
+  .command('bulk-import')
+  .description('Bulk import management')
+
+bulkImport
+  .command('list')
+  .description('Print all available bulk import operations')
+  .action(async () => {
+    const result = await printBulkImportOperations()
     handleCommandResult(result)
   })
 
