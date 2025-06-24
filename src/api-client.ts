@@ -1,6 +1,6 @@
 import { getConfig } from './utils.js'
 import { got } from 'got'
-import { APIHealthResponse, APIProjectDetails, APIGithubOrgDetails, APIChecklistItem, APICheckItem, APIWorkflowItem, APIWorkflowRunItem } from './types.js'
+import { APIHealthResponse, APIProjectDetails, APIGithubOrgDetails, APIChecklistItem, APICheckItem, APIWorkflowItem, APIWorkflowRunItem, APIBulkImportOperationItem } from './types.js'
 
 export const apiClient = () => {
   const config = getConfig()
@@ -91,4 +91,13 @@ export const runWorkflow = async (workflowId: string, data: any): Promise<APIWor
     throw new Error(`Failed to run the workflow: ${response.statusCode} ${response.body}`)
   }
   return response.body as APIWorkflowRunItem
+}
+
+export const getAllBulkImportOperations = async (): Promise<APIBulkImportOperationItem[]> => {
+  const client = apiClient()
+  const response = await client.get('bulk-import', { responseType: 'json' })
+  if (response.statusCode !== 200) {
+    throw new Error(`Failed to get the data from the API: ${response.statusCode} ${response.body}`)
+  }
+  return response.body as APIBulkImportOperationItem[]
 }

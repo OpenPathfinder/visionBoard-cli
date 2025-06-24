@@ -1,9 +1,9 @@
 /* eslint-env jest */
 
-import { getVersion, runDoctor, addProjectWithGithubOrgs, printChecklists, printChecks, printWorkflows, executeWorkflow } from '../cli-commands.js'
+import { getVersion, runDoctor, addProjectWithGithubOrgs, printChecklists, printChecks, printWorkflows, executeWorkflow, printBulkImportOperations } from '../cli-commands.js'
 import { getPackageJson } from '../utils.js'
-import { APIHealthResponse, APIProjectDetails, APIGithubOrgDetails, APIErrorResponse, APIChecklistItem, APICheckItem, APIWorkflowItem, APIWorkflowRunItem } from '../types.js'
-import { mockApiHealthResponse, mockAPIProjectResponse, mockAPIGithubOrgResponse, mockAPIChecklistResponse, mockAPICheckResponse, mockAPIWorkflowResponse, mockAPIWorkflowRunResponse } from './fixtures.js'
+import { APIHealthResponse, APIProjectDetails, APIGithubOrgDetails, APIErrorResponse, APIChecklistItem, APICheckItem, APIWorkflowItem, APIWorkflowRunItem, APIBulkImportOperationItem } from '../types.js'
+import { mockApiHealthResponse, mockAPIProjectResponse, mockAPIGithubOrgResponse, mockAPIChecklistResponse, mockAPICheckResponse, mockAPIWorkflowResponse, mockAPIWorkflowRunResponse, mockAPIBulkImportOperationResponse } from './fixtures.js'
 import nock from 'nock'
 
 const pkg = getPackageJson()
@@ -583,6 +583,63 @@ describe('CLI Commands', () => {
       expect(result.success).toBe(false)
       expect(result.messages[0]).toContain('❌ Failed to execute the workflow')
       expect(result.messages[0]).toContain('Network error')
+      expect(result.messages).toHaveLength(1)
+    })
+  })
+
+  describe('printBulkImportOperations', () => {
+    let mockBulkImportOperations: APIBulkImportOperationItem[]
+
+    beforeEach(() => {
+      nock.cleanAll()
+      mockBulkImportOperations = [...mockAPIBulkImportOperationResponse]
+    })
+
+    it('should retrieve and format bulk import operations successfully', async () => {
+      // Mock API call
+      nock('http://localhost:3000')
+        .get('/api/v1/bulk-import')
+        .reply(200, mockBulkImportOperations)
+
+      // Execute the function
+      const result = await printBulkImportOperations()
+
+      // Verify the result
+      expect(result.success).toBe(true)
+      expect(result.messages[0]).toBe('Bulk import operations available:')
+      expect(result.messages[1]).toContain(mockBulkImportOperations[0].id)
+      expect(result.messages[1]).toContain(mockBulkImportOperations[0].description)
+      expect(result.messages).toHaveLength(2) // Header + 1 bulk import operation
+      expect(nock.isDone()).toBe(true) // Verify all mocked endpoints were called
+    })
+
+    it('should handle empty bulk import operations response', async () => {
+      // Mock empty response
+      nock('http://localhost:3000')
+        .get('/api/v1/bulk-import')
+        .reply(200, [])
+
+      // Execute the function
+      const result = await printBulkImportOperations()
+
+      // Verify the result
+      expect(result.success).toBe(true)
+      expect(result.messages).toHaveLength(1) // Only the header message
+      expect(result.messages[0]).toBe('No bulk import operations found')
+    })
+
+    it('should handle network errors gracefully', async () => {
+      // Mock network error
+      nock('http://localhost:3000')
+        .get('/api/v1/bulk-import')
+        .replyWithError('Network error')
+
+      // Execute the function
+      const result = await printBulkImportOperations()
+
+      // Verify the result
+      expect(result.success).toBe(false)
+      expect(result.messages[0]).toContain('❌ Failed to retrieve bulk import operation items: Network error')
       expect(result.messages).toHaveLength(1)
     })
   })
