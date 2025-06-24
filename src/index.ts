@@ -60,7 +60,11 @@ workflow
     } else if (options.data && options.file) {
       throw new Error('Please provide either -d or -f, not both')
     } else if (options.data) {
-      data = options.data
+      try {
+        data = JSON.parse(options.data)
+      } catch (error) {
+        throw new Error(`Failed to parse provided JSON data: ${error instanceof Error ? error.message : 'Unknown error'}`)
+      }
     } else if (options.file) {
       try {
         const fileContent = fs.readFileSync(options.file, 'utf-8')
@@ -70,12 +74,13 @@ workflow
       }
     }
 
+    if (!workflow.schema && workflow.isRequiredAdditionalData) {
+      throw new Error('Workflow does not have a JSON schema. This is an API error')
+    }
+
     // If data is provided, validate against JSON Schema
-    if (data) {
-      const schema = workflow.schema
-      if (!schema) {
-        throw new Error('Workflow does not have a JSON schema')
-      }
+    if (data && workflow.schema) {
+      const schema = JSON.parse(workflow.schema)
       const result = await validateData(data, schema)
       if (!result.success) {
         throw new Error(`Data validation failed: ${result.messages[0]}`)
