@@ -518,7 +518,7 @@ describe('CLI Commands', () => {
     it('should execute a workflow successfully', async () => {
       // Mock API call
       nock('http://localhost:3000')
-        .post('/api/v1/workflow/update-stuff/run', { data: { projectId: 123 } })
+        .post('/api/v1/workflow/update-stuff/execute', { data: { projectId: 123 } })
         .reply(202, workflowRunResponse)
 
       // Execute the function
@@ -538,7 +538,7 @@ describe('CLI Commands', () => {
     it('Should execute a workflow that was unsuccessful', async () => {
       // Mock API call
       nock('http://localhost:3000')
-        .post('/api/v1/workflow/update-stuff/run', { data: { projectId: 123 } })
+        .post('/api/v1/workflow/update-stuff/execute', { data: { projectId: 123 } })
         .reply(202, { ...workflowRunResponse, status: 'failed', result: { message: 'Failed to execute workflow', success: false } })
 
       // Execute the function
@@ -558,7 +558,7 @@ describe('CLI Commands', () => {
     it('should handle API errors gracefully', async () => {
       // Mock API error
       nock('http://localhost:3000')
-        .post('/api/v1/workflow/invalid-workflow/run')
+        .post('/api/v1/workflow/invalid-workflow/execute')
         .reply(404, { errors: [{ message: 'Workflow not found' }] } as APIErrorResponse)
 
       // Execute the function
@@ -573,7 +573,7 @@ describe('CLI Commands', () => {
     it('should handle network errors gracefully', async () => {
       // Mock network error
       nock('http://localhost:3000')
-        .post('/api/v1/workflow/update-stuff/run')
+        .post('/api/v1/workflow/update-stuff/execute')
         .replyWithError('Network error')
 
       // Execute the function
