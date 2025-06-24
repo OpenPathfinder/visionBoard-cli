@@ -142,6 +142,15 @@ export type APICheckItem = {
 };
 
 /**
+ * Bulk Import Operation Schema
+ */
+export interface APIBulkImportOperationItem {
+  id: string;
+  description: string;
+  schema: string;
+}
+
+/**
  * Workflow Operation Schema
  * @TODO: Move or reuse with bulk-import endpoint is created.
  */
