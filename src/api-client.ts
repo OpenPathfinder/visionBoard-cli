@@ -83,7 +83,7 @@ export const getAllWorkflows = async (): Promise<APIWorkflowItem[]> => {
 export const runWorkflow = async (workflowId: string, data: any): Promise<APIWorkflowRunItem> => {
   const client = apiClient()
   const payload = data ? { data } : {}
-  const response = await client.post(`workflow/${workflowId}/run`, {
+  const response = await client.post(`workflow/${workflowId}/execute`, {
     json: payload,
     responseType: 'json'
   })
