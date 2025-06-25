@@ -1,6 +1,6 @@
 import { CommandResult } from './types.js'
 import { isApiAvailable, isApiCompatible, getPackageJson } from './utils.js'
-import { getAPIDetails, createProject, addGithubOrgToProject, getAllChecklistItems, getAllChecks, getAllWorkflows, getAllBulkImportOperations, runWorkflow } from './api-client.js'
+import { getAPIDetails, createProject, addGithubOrgToProject, getAllChecklistItems, getAllChecks, getAllWorkflows, getAllBulkImportOperations, runWorkflow, runBulkImportOperation } from './api-client.js'
 
 const pkg = getPackageJson()
 
@@ -184,6 +184,32 @@ export const printBulkImportOperations = async (): Promise<CommandResult> => {
     })
   } catch (error) {
     messages.push(`❌ Failed to retrieve bulk import operation items: ${error instanceof Error ? error.message : 'Unknown error'}`)
+    success = false
+  }
+
+  return {
+    messages,
+    success
+  }
+}
+
+export const executeBulkImportOperation = async (id: string, data: any): Promise<CommandResult> => {
+  const messages: string[] = []
+  let success = true
+  try {
+    const results = await runBulkImportOperation(id, data)
+    const startTime = new Date(results.started)
+    const endTime = new Date(results.finished)
+    const duration = endTime.getTime() - startTime.getTime()
+    const durationStr = duration < 1000 ? `${duration} ms` : `${(duration / 1000).toFixed(2)} seconds`
+
+    messages.push(`Bulk import operation executed ${results.result.success ? 'successfully' : 'unsuccessfully'} in ${durationStr}`)
+    messages.push(`- Status: ${results.status}`)
+    messages.push(`- Started: ${startTime}`)
+    messages.push(`- Finished: ${endTime}`)
+    messages.push(`- Result: ${results.result.message}`)
+  } catch (error) {
+    messages.push(`❌ Failed to execute the bulk import operation: ${error instanceof Error ? error.message : 'Unknown error'}`)
     success = false
   }
 

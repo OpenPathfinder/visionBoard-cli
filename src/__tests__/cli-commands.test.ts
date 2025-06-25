@@ -1,9 +1,9 @@
 /* eslint-env jest */
 
-import { getVersion, runDoctor, addProjectWithGithubOrgs, printChecklists, printChecks, printWorkflows, executeWorkflow, printBulkImportOperations } from '../cli-commands.js'
+import { getVersion, runDoctor, addProjectWithGithubOrgs, printChecklists, printChecks, printWorkflows, executeWorkflow, printBulkImportOperations, executeBulkImportOperation } from '../cli-commands.js'
 import { getPackageJson } from '../utils.js'
-import { APIHealthResponse, APIProjectDetails, APIGithubOrgDetails, APIErrorResponse, APIChecklistItem, APICheckItem, APIWorkflowItem, APIWorkflowRunItem, APIBulkImportOperationItem } from '../types.js'
-import { mockApiHealthResponse, mockAPIProjectResponse, mockAPIGithubOrgResponse, mockAPIChecklistResponse, mockAPICheckResponse, mockAPIWorkflowResponse, mockAPIWorkflowRunResponse, mockAPIBulkImportOperationResponse } from './fixtures.js'
+import { APIHealthResponse, APIProjectDetails, APIGithubOrgDetails, APIErrorResponse, APIChecklistItem, APICheckItem, APIWorkflowItem, APIOperationCompleted, APIBulkImportOperationItem } from '../types.js'
+import { mockApiHealthResponse, mockAPIProjectResponse, mockAPIGithubOrgResponse, mockAPIChecklistResponse, mockAPICheckResponse, mockAPIWorkflowResponse, mockAPIWorkflowRunResponse, mockAPIBulkImportOperationResponse, mockAPIBulkImportOperationRunResponse } from './fixtures.js'
 import nock from 'nock'
 
 const pkg = getPackageJson()
@@ -506,7 +506,7 @@ describe('CLI Commands', () => {
   })
 
   describe('executeWorkflow', () => {
-    let workflowRunResponse: APIWorkflowRunItem
+    let workflowRunResponse: APIOperationCompleted
 
     beforeEach(() => {
       nock.cleanAll()
@@ -640,6 +640,65 @@ describe('CLI Commands', () => {
       // Verify the result
       expect(result.success).toBe(false)
       expect(result.messages[0]).toContain('❌ Failed to retrieve bulk import operation items: Network error')
+      expect(result.messages).toHaveLength(1)
+    })
+  })
+  describe('executeBulkImportOperation', () => {
+    let mockBulkImportOperationResponse: APIOperationCompleted
+
+    beforeEach(() => {
+      nock.cleanAll()
+      mockBulkImportOperationResponse = mockAPIBulkImportOperationRunResponse
+    })
+
+    it('should execute a bulk import operation successfully', async () => {
+      // Mock API call
+      nock('http://localhost:3000')
+        .post('/api/v1/bulk-import')
+        .reply(200, mockBulkImportOperationResponse)
+
+      // Execute the function
+      const result = await executeBulkImportOperation('load-manual-checks', [{ type: 'annualDependencyRefresh', project_id: 1, is_subscribed: true }])
+
+      // Verify the result
+      expect(result.success).toBe(true)
+      expect(result.messages).toHaveLength(5) // 5 messages with details
+      expect(result.messages[0]).toContain('Bulk import operation executed successfully in 2.50 seconds')
+      expect(result.messages[1]).toContain('Status: completed')
+      expect(result.messages[2]).toContain('Started:')
+      expect(result.messages[3]).toContain('Finished:')
+      expect(result.messages[4]).toContain('Result:')
+      expect(nock.isDone()).toBe(true) // Verify all mocked endpoints were called
+    })
+
+    it('should handle API errors gracefully', async () => {
+      // Mock API error
+      nock('http://localhost:3000')
+        .post('/api/v1/bulk-import')
+        .reply(404, { errors: [{ message: 'Bulk import operation not found' }] } as APIErrorResponse)
+
+      // Execute the function
+      const result = await executeBulkImportOperation('load-manual-checks', [{ type: 'annualDependencyRefresh', project_id: 1, is_subscribed: true }])
+
+      // Verify the result
+      expect(result.success).toBe(false)
+      expect(result.messages[0]).toContain('❌ Failed to execute the bulk import operation')
+      expect(result.messages).toHaveLength(1)
+    })
+
+    it('should handle network errors gracefully', async () => {
+      // Mock network error
+      nock('http://localhost:3000')
+        .post('/api/v1/bulk-import')
+        .replyWithError('Network error')
+
+      // Execute the function
+      const result = await executeBulkImportOperation('load-manual-checks', [{ type: 'annualDependencyRefresh', project_id: 1, is_subscribed: true }])
+
+      // Verify the result
+      expect(result.success).toBe(false)
+      expect(result.messages[0]).toContain('❌ Failed to execute the bulk import operation')
+      expect(result.messages[0]).toContain('Network error')
       expect(result.messages).toHaveLength(1)
     })
   })

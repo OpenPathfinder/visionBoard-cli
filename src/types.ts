@@ -175,7 +175,7 @@ export interface APIWorkflowItem {
 /**
  * Workflow Run Schema
  */
-export interface APIWorkflowRunItem {
+export interface APIOperationCompleted {
   status: string;
   started: string;
   finished: string;
