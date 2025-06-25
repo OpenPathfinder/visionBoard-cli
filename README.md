@@ -121,6 +121,19 @@ Options for `project add`:
 - `-n, --name <name>`: Project name (required)
 - `-g, --github-orgs <githubOrgUrls...>`: GitHub organization URLs (optional)
 
+## Scripting with visionBoard CLI
+
+The visionBoard CLI can be incorporated into automation scripts for more complex workflows. Below is an example of how to chain multiple operations in a shell script.
+
+The sample script ([sample.sh](sample.sh)) demonstrates how to:
+
+1. Configure the CLI using environment variables
+2. Verify connectivity with the API
+3. List available resources for reference
+4. Set up a new project with GitHub integration
+5. Execute various workflows with and without parameters
+6. Perform bulk imports using both inline JSON and file-based input
+
 ## Configuration
 
 The visionBoard CLI supports configuration through environment variables:
