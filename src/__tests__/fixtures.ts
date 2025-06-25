@@ -1,4 +1,4 @@
-import { APIHealthResponse, APIProjectDetails, APIGithubOrgDetails, APIChecklistItem, APICheckItem, APIWorkflowItem, APIWorkflowRunItem, APIBulkImportOperationItem } from '../types.js'
+import { APIHealthResponse, APIProjectDetails, APIGithubOrgDetails, APIChecklistItem, APICheckItem, APIWorkflowItem, APIOperationCompleted, APIBulkImportOperationItem } from '../types.js'
 
 export const mockApiHealthResponse: APIHealthResponse = {
   status: 'ok',
@@ -131,7 +131,7 @@ export const mockAPIWorkflowResponse: APIWorkflowItem[] = [{
   schema: null
 }]
 
-export const mockAPIWorkflowRunResponse: APIWorkflowRunItem = {
+export const mockAPIWorkflowRunResponse: APIOperationCompleted = {
   status: 'completed',
   started: '2025-06-21T10:05:00.000Z',
   finished: '2025-06-21T10:05:02.500Z',
@@ -144,3 +144,11 @@ export const mockAPIBulkImportOperationResponse: APIBulkImportOperationItem[] = 
   description: 'Test bulk import operation description',
   schema: 'test-bulk-import-operation'
 }]
+
+export const mockAPIBulkImportOperationRunResponse: APIOperationCompleted = {
+  status: 'completed',
+  started: '2025-06-21T10:05:00.000Z',
+  finished: '2025-06-21T10:05:02.500Z',
+  completed: '2025-06-21T10:05:02.500Z',
+  result: { success: true, message: 'Bulk import operation completed successfully' }
+}
