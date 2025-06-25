@@ -110,7 +110,7 @@ export const runBulkImportOperation = async (id: string, payload: any): Promise<
     throwHttpErrors: false
   })
 
-  if (response.statusCode <= 500 && response.statusCode >= 400) {
+  if (response.statusCode < 500 && response.statusCode >= 400) {
     throw new Error(`Failed to run the bulk import operation: ${response.statusCode} ${JSON.stringify(response.body, null, 2)}`)
   }
 

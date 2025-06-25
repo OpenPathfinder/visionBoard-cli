@@ -73,7 +73,7 @@ bulkImport
     }
 
     if (!operation.schema) {
-      throw new Error('Bulk import operation does not have a JSON schema. This is an API error')
+      throw new Error('Bulk import operation does not have a JSON schema for data validation. This is an API error')
     }
 
     // If data is provided, validate against JSON Schema
