@@ -50,6 +50,77 @@ visionboard
 
 This will display the help information with available commands.
 
+## Commands
+
+### General Commands
+
+```bash
+# Show version information
+visionboard version
+
+# Check compatibility and availability with the API
+visionboard doctor
+```
+
+### Bulk Import Management
+
+```bash
+# List all available bulk import operations
+visionboard bulk-import list
+
+# Run a bulk import operation
+visionboard bulk-import run -i <id> [-d <data> | -f <file>]
+```
+
+Options for `bulk-import run`:
+- `-i, --id <id>`: Bulk import operation ID (required)
+- `-d, --data <data>`: JSON data to pass to the bulk import operation
+- `-f, --file <file>`: File containing JSON data to be parsed
+
+**Note**: Exactly one of `-d` or `-f` must be provided.
+
+### Workflow Management
+
+```bash
+# List all available compliance workflows
+visionboard workflow list
+
+# Execute a compliance workflow
+visionboard workflow execute -w <workflowName> [-d <data> | -f <file>]
+```
+
+Options for `workflow execute`:
+- `-w, --workflow <workflowName>`: Workflow name (required)
+- `-d, --data <data>`: JSON data to pass to the workflow
+- `-f, --file <file>`: File containing JSON data to be parsed
+
+**Note**: Exactly one of `-d` or `-f` must be provided if the workflow requires additional data.
+
+### Compliance Checklist Management
+
+```bash
+# List all available compliance checklists
+visionboard compliance-checklist list
+```
+
+### Compliance Check Management
+
+```bash
+# List all available compliance checks
+visionboard compliance-check list
+```
+
+### Project Management
+
+```bash
+# Add a project with optional GitHub organizations
+visionboard project add -n <name> [-g | --github-orgs <githubOrgUrls...>]
+```
+
+Options for `project add`:
+- `-n, --name <name>`: Project name (required)
+- `-g, --github-orgs <githubOrgUrls...>`: GitHub organization URLs (optional)
+
 ## Configuration
 
 The visionBoard CLI supports configuration through environment variables:
