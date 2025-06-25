@@ -1,6 +1,6 @@
 import { getConfig } from './utils.js'
 import { got } from 'got'
-import { APIHealthResponse, APIProjectDetails, APIGithubOrgDetails, APIChecklistItem, APICheckItem, APIWorkflowItem, APIWorkflowRunItem, APIBulkImportOperationItem } from './types.js'
+import { APIHealthResponse, APIProjectDetails, APIGithubOrgDetails, APIChecklistItem, APICheckItem, APIWorkflowItem, APIOperationCompleted, APIBulkImportOperationItem } from './types.js'
 
 export const apiClient = () => {
   const config = getConfig()
@@ -80,7 +80,7 @@ export const getAllWorkflows = async (): Promise<APIWorkflowItem[]> => {
   return response.body as APIWorkflowItem[]
 }
 
-export const runWorkflow = async (workflowId: string, data: any): Promise<APIWorkflowRunItem> => {
+export const runWorkflow = async (workflowId: string, data: any): Promise<APIOperationCompleted> => {
   const client = apiClient()
   const payload = data ? { data } : {}
   const response = await client.post(`workflow/${workflowId}/execute`, {
@@ -90,7 +90,7 @@ export const runWorkflow = async (workflowId: string, data: any): Promise<APIWor
   if (response.statusCode !== 202) {
     throw new Error(`Failed to run the workflow: ${response.statusCode} ${response.body}`)
   }
-  return response.body as APIWorkflowRunItem
+  return response.body as APIOperationCompleted
 }
 
 export const getAllBulkImportOperations = async (): Promise<APIBulkImportOperationItem[]> => {
@@ -100,4 +100,19 @@ export const getAllBulkImportOperations = async (): Promise<APIBulkImportOperati
     throw new Error(`Failed to get the data from the API: ${response.statusCode} ${response.body}`)
   }
   return response.body as APIBulkImportOperationItem[]
+}
+
+export const runBulkImportOperation = async (id: string, payload: any): Promise<APIOperationCompleted> => {
+  const client = apiClient()
+  const response = await client.post('bulk-import', {
+    json: { id, payload },
+    responseType: 'json',
+    throwHttpErrors: false
+  })
+
+  if (response.statusCode <= 500 && response.statusCode >= 400) {
+    throw new Error(`Failed to run the bulk import operation: ${response.statusCode} ${JSON.stringify(response.body, null, 2)}`)
+  }
+
+  return response.body as APIOperationCompleted
 }
