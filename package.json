@@ -2,6 +2,9 @@
   "name": "@openpathfinder/visionboard-cli",
   "version": "0.0.2",
   "description": "CLI to interact with visionBoard API",
+  "publishConfig": {
+    "access": "public"
+  },
   "main": "dist/index.js",
   "scripts": {
     "build": "tsc",
