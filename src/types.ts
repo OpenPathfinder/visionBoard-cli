@@ -151,16 +151,6 @@ export interface APIBulkImportOperationItem {
 }
 
 /**
- * Workflow Operation Schema
- * @TODO: Move or reuse with bulk-import endpoint is created.
- */
-interface WorkflowOperationItem {
-  id: string;
-  description: string;
-  schema: string;
-}
-
-/**
  * Workflow Schema
  */
 export interface APIWorkflowItem {
@@ -169,7 +159,6 @@ export interface APIWorkflowItem {
   isEnabled: boolean;
   isRequiredAdditionalData: boolean;
   schema: string | null;
-  operations: WorkflowOperationItem[] | null;
 }
 
 /**
