@@ -127,7 +127,6 @@ export const mockAPIWorkflowResponse: APIWorkflowItem[] = [{
   description: 'Test workflow description',
   isEnabled: true,
   isRequiredAdditionalData: false,
-  operations: null,
   schema: null
 }]
 
