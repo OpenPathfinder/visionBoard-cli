@@ -4,9 +4,9 @@ import { Command } from 'commander'
 // @ts-ignore
 import { stringToArray } from '@ulisesgascon/string-to-array'
 import { handleCommandResult, validateData } from './utils.js'
-import { getAllWorkflows } from './api-client.js'
+import { getAllWorkflows, getAllBulkImportOperations } from './api-client.js'
 import fs from 'fs'
-import { getVersion, runDoctor, addProjectWithGithubOrgs, printChecklists, printChecks, printWorkflows, executeWorkflow, printBulkImportOperations } from './cli-commands.js'
+import { getVersion, runDoctor, addProjectWithGithubOrgs, printChecklists, printChecks, printWorkflows, executeWorkflow, printBulkImportOperations, executeBulkImportOperation } from './cli-commands.js'
 
 const program = new Command()
 
@@ -34,6 +34,58 @@ bulkImport
   .description('Print all available bulk import operations')
   .action(async () => {
     const result = await printBulkImportOperations()
+    handleCommandResult(result)
+  })
+
+bulkImport
+  .command('run')
+  .description('Run a bulk import operation')
+  .requiredOption('-i, --id <id>', 'Bulk import operation ID')
+  .option('-d, --data <data>', 'Data to pass to the bulk import operation')
+  .option('-f, --file <file>', 'File containing the data to be parsed')
+  .action(async (options) => {
+    // @TODO: Move to utils and include tests when the backend has one workflow that requires additional data
+    const operations = await getAllBulkImportOperations()
+    const operation = operations.find((operation) => operation.id === options.id)
+    let data: any | undefined
+    if (!operation) {
+      throw new Error(`Invalid bulk import operation ID (${options.id}). Available operations: ${operations.map(o => o.id).join(', ')}`)
+    }
+
+    // Check if workflow requires additional data and if it is provided or requires collection
+    if (!options.data && !options.file) {
+      throw new Error('Bulk import operation requires additional data. Please provide data using -d or -f option')
+    } else if (options.data && options.file) {
+      throw new Error('Please provide either -d or -f, not both')
+    } else if (options.data) {
+      try {
+        data = JSON.parse(options.data)
+      } catch (error) {
+        throw new Error(`Failed to parse provided JSON data: ${error instanceof Error ? error.message : 'Unknown error'}`)
+      }
+    } else if (options.file) {
+      try {
+        const fileContent = fs.readFileSync(options.file, 'utf-8')
+        data = JSON.parse(fileContent)
+      } catch (error) {
+        throw new Error(`Failed to read or parse file: ${error instanceof Error ? error.message : 'Unknown error'}`)
+      }
+    }
+
+    if (!operation.schema) {
+      throw new Error('Bulk import operation does not have a JSON schema. This is an API error')
+    }
+
+    // If data is provided, validate against JSON Schema
+    if (data && operation.schema) {
+      const schema = JSON.parse(operation.schema)
+      const result = await validateData(data, schema)
+      if (!result.success) {
+        throw new Error(`Data validation failed: ${result.messages[0]}`)
+      }
+    }
+
+    const result = await executeBulkImportOperation(options.id, data)
     handleCommandResult(result)
   })
 
